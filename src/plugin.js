@@ -31,7 +31,7 @@ const ErrorBarsPlugin = {
   /**
    * get original barchart base bar coords
    * @param chart chartjs instance
-   * @returns {Array} containing label, x, y and color
+   * @returns {Array} containing label, x, y, color, xAxisID, yxAxisID
    * @private
    */
   _getBarchartBaseCoords(chart) {
@@ -53,7 +53,9 @@ const ErrorBarsPlugin = {
           value: values[j],
           x: b._model.x,
           y: b._model.y,
-          color: b._model.borderColor
+          color: b._model.borderColor,
+          xAxisID: b._xScale.id,
+          yAxisID: b._yScale.id
         };
       }));
     });
@@ -176,7 +178,6 @@ const ErrorBarsPlugin = {
 
     // determine value scale and orientation (vertical or horizontal)
     const horizontal = this._isHorizontal(chart);
-    const vScale = horizontal ? chart.scales['x-axis-0'] : chart.scales['y-axis-0'];
 
     const errorBarWidths = (Array.isArray(options.width) ? options.width : [options.width]).map((w) => this._computeWidth(chart, horizontal, w));
     const errorBarLineWidths = Array.isArray(options.lineWidth) ? options.lineWidth : [options.lineWidth];
@@ -195,8 +196,9 @@ const ErrorBarsPlugin = {
         }
       }
 
-      dataset.forEach((bar) => {
-
+      dataset.forEach((bar,barIdx) => {
+        const axisId = `${horizontal ? 'x' : 'y'}AxisID`;
+        const vScale = chart.scales[bar[axisId]];
 
         let cur = errorBarCoords[i];
         if (!cur) {
@@ -211,6 +213,8 @@ const ErrorBarsPlugin = {
         } else if (!hasLabelProperty && bar.label && bar.label.label && cur.hasOwnProperty(bar.label.label)) {
           // hierarchical scale has its label property nested in b.label object as b.label.label
           errorBarData = cur[bar.label.label];
+        }else if(cur[barIdx]){
+          errorBarData = cur[barIdx]
         }
 
         if (!errorBarData) {
