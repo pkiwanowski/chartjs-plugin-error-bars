@@ -24,7 +24,7 @@ const defaultOptions = {
    */
   absoluteValues: false
 };
-
+const supportedTypes = ['line', 'bar', 'horizontalBar'];
 const ErrorBarsPlugin = {
   id: 'chartJsPluginErrorBars',
 
@@ -162,7 +162,7 @@ const ErrorBarsPlugin = {
     // wait for easing value to reach 1 at the first render, after that draw immediately
     chart.__renderedOnce = chart.__renderedOnce || easingValue === 1;
 
-    if (!chart.__renderedOnce) {
+    if (!chart.__renderedOnce || !supportedTypes.includes(chart.config.type)) {
       return;
     }
 
@@ -196,7 +196,7 @@ const ErrorBarsPlugin = {
         }
       }
 
-      dataset.forEach((bar,barIdx) => {
+      dataset.forEach((bar, barIdx) => {
         const axisId = `${horizontal ? 'x' : 'y'}AxisID`;
         const vScale = chart.scales[bar[axisId]];
 
@@ -213,8 +213,8 @@ const ErrorBarsPlugin = {
         } else if (!hasLabelProperty && bar.label && bar.label.label && cur.hasOwnProperty(bar.label.label)) {
           // hierarchical scale has its label property nested in b.label object as b.label.label
           errorBarData = cur[bar.label.label];
-        }else if(cur[barIdx]){
-          errorBarData = cur[barIdx]
+        } else if (cur[barIdx]) {
+          errorBarData = cur[barIdx];
         }
 
         if (!errorBarData) {
@@ -226,7 +226,7 @@ const ErrorBarsPlugin = {
 
         errorBars.forEach((errorBar, ei) => {
           // error bar data for the barchart bar or point in linechart
-          const errorBarColor = errorBarColors[ei % errorBarColors.length] ? errorBarColors[ei % errorBarColors.length] : bar.color;
+          const errorBarColor = errorBar.color ? errorBar.color : (errorBarColors[ei % errorBarColors.length] ? errorBarColors[ei % errorBarColors.length] : bar.color);
           const errorBarLineWidth = errorBarLineWidths[ei % errorBarLineWidths.length];
           const errorBarWidth = errorBarWidths[ei % errorBarWidths.length];
 
